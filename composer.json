@@ -1,0 +1,30 @@
+{
+    "name": "51degrees/fiftyone.pipeline.javascript-templates",
+    "description": "51Degrees JavascriptResource Mustache template",
+    "authors": [
+        {
+            "name": "Filip Hnízdo",
+            "email": "filip@octophin.com",
+            "homepage": "https://octophindigital.com/"
+        },
+        {
+            "name": "Steve Ballantine",
+            "email": "stephen@51degrees.com"
+        },
+        {
+            "name": "Ben Shilito",
+            "email": "ben@51degrees.com"
+        },
+        {
+            "name": "Joseph Dix",
+            "email": "joseph@51degrees.com"
+        },
+        {
+            "name": "Luka Reihl",
+            "email": "luka.reihl@postindustria.com"
+        }
+    ],
+    "license": "EUPL-1.2",
+    "type": "library",
+    "require": {}
+}
