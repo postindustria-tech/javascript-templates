@@ -84,11 +84,11 @@ fiftyoneDegreesManager = function() {
         {{#_enableCookies}}
         {
             let keyValuePairs = document.cookie.split(/; */);
-            for(let i = 0; i < keyValuePairs.length; i++) {
+            for(let nextPair of keyValuePairs) {
                 let firstEqualsLocation = nextPair.indexOf('=');
-                let name = keyValuePairs[i].substring(0, firstEqualsLocation);
+                let name = nextPair.substring(0, firstEqualsLocation);
                 if(startsWith(name, "51D_")){
-                    let value = keyValuePairs[i].substring(firstEqualsLocation+1);
+                    let value = nextPair.substring(firstEqualsLocation+1);
                     fodCookies[name] = value;
                 }
             }
