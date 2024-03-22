@@ -81,36 +81,32 @@ fiftyoneDegreesManager = function() {
     // where CORS will prevent cookies being sent to third parties.
     var getFodSavedValues = function(){
         let fodCookies = {};
+        {{#_enableCookies}}
         {
-            // Collect values from local storage
+            let keyValuePairs = document.cookie.split(/; */);
+            for(let i = 0; i < keyValuePairs.length; i++) {
+                let firstEqualsLocation = nextPair.indexOf('=');
+                let name = keyValuePairs[i].substring(0, firstEqualsLocation);
+                if(startsWith(name, "51D_")){
+                    let value = keyValuePairs[i].substring(firstEqualsLocation+1);
+                    fodCookies[name] = value;
+                }
+            }
+        };
+        {{/_enableCookies}}
+        {{^_enableCookies}}
+        {
+            // Collect values from session storage
+            let sessionCookiePrefix = sessionKey + "_cookie_";
             for(let i = 0, n = window.sessionStorage.length; i < n; ++i) {
                 let nextKey = window.sessionStorage.key(i);
-                if(startsWith(nextKey, "51D_")){
+                if(startsWith(nextKey, sessionCookiePrefix)){
                     let value = window.sessionStorage[nextKey];
-                    fodCookies[nextKey] = value;
+                    fodCookies[nextKey.substring(sessionCookiePrefix.length)] = value;
                 }
             }
         };
-        {
-            // Migrate values from cookies
-            let keyValuePairs = document.cookie.split(/; */);
-            let keysToRemove = [];
-            for(let nextPair of keyValuePairs) {
-                let firstEqualsLocation = nextPair.indexOf('=');
-                let name = nextPair.substring(0, firstEqualsLocation);
-                if(startsWith(name, "51D_")){
-                    if (fodCookies.hasOwnProperty(name)) {
-                        // prioritize localStorage over cookies
-                        continue;
-                    }
-                    let value = nextPair.substring(firstEqualsLocation+1);
-                    fodCookies[name] = value;
-                    window.sessionStorage[name] = value;
-                    keysToRemove.push(name);
-                }
-            }
-            keysToRemove.forEach(deleteCookie);
-        };
+        {{/_enableCookies}}
         return fodCookies;
     };
 
@@ -202,6 +198,12 @@ fiftyoneDegreesManager = function() {
         // then process them and perform any call-backs required.
         if (jsProperties !== undefined && jsProperties.length > 0) {
 
+            {{^_enableCookies}}
+            let cookieSetRegex = new RegExp('document\\.cookie\\s*=\\s*(("([A-Za-z0-9_]+)\\s*=\\s*"\\s*\\+\\s*([^\\s};]+))|(`([A-Za-z0-9_]+)\\s*=\\s*\\$\\{([^}]+)\\}`))', 'g');
+            let sessionCookiePrefix = sessionKey + "_cookie_";
+            let sessionSetPatch = 'window.sessionStorage["' + sessionCookiePrefix + '$3$6"]=$4$7';
+            {{/_enableCookies}}
+                            
             // Execute each of the JavaScript property code snippets using the
             // index of the value to access the value to avoid problems with
             // JavaScript returning erroneous values.
@@ -232,8 +234,9 @@ fiftyoneDegreesManager = function() {
                             jsPropertiesStarted.push(name);
                             started++;
 
-                            let r = new RegExp('document\\.cookie\\s*=\\s*(("([A-Za-z0-9_]+)\\s*=\\s*"\\s*\\+\\s*([^\\s};]+))|(`([A-Za-z0-9_]+)\\s*=\\s*\\$\\{([^}]+)\\}`))', 'g');
-                            body = body.replaceAll(r, 'window.sessionStorage["$3$6"]=$4$7');
+                            {{^_enableCookies}}
+                            body = body.replaceAll(cookieSetRegex, sessionSetPatch);
+                            {{/_enableCookies}}
 
                             if (body.indexOf(searchString) !== -1){
                                 callbackCounter++;
