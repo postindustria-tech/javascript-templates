@@ -83,10 +83,10 @@ fiftyoneDegreesManager = function() {
         let fodCookies = {};
         {
             // Collect values from local storage
-            for(let i = 0, n = window.localStorage.length; i < n; ++i) {
-                let nextKey = window.localStorage.key(i);
+            for(let i = 0, n = window.sessionStorage.length; i < n; ++i) {
+                let nextKey = window.sessionStorage.key(i);
                 if(startsWith(nextKey, "51D_")){
-                    let value = window.localStorage[nextKey];
+                    let value = window.sessionStorage[nextKey];
                     fodCookies[nextKey] = value;
                 }
             }
@@ -105,7 +105,7 @@ fiftyoneDegreesManager = function() {
                     }
                     let value = nextPair.substring(firstEqualsLocation+1);
                     fodCookies[name] = value;
-                    window.localStorage[name] = value;
+                    window.sessionStorage[name] = value;
                     keysToRemove.push(name);
                 }
             }
@@ -233,7 +233,7 @@ fiftyoneDegreesManager = function() {
                             started++;
 
                             let r = new RegExp('document\\.cookie\\s*=\\s*(("([A-Za-z0-9_]+)\\s*=\\s*"\\s*\\+\\s*([^\\s};]+))|(`([A-Za-z0-9_]+)\\s*=\\s*\\$\\{([^}]+)\\}`))', 'g');
-                            body = body.replaceAll(r, 'window.localStorage["$3$6"]=$4$7');
+                            body = body.replaceAll(r, 'window.sessionStorage["$3$6"]=$4$7');
 
                             if (body.indexOf(searchString) !== -1){
                                 callbackCounter++;
