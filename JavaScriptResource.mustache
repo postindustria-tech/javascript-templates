@@ -214,7 +214,7 @@ fiftyoneDegreesManager = function() {
                     if (body) {
                         toProcess++;
                     }
-                    var isCached = sessionStorage && sessionStorage.getItem(sessionKey + "_" + name);
+                    var isCached = sessionStorage && sessionStorage.getItem(sessionKey + "_property_" + name);
 
                     if (!isCached) {
                         // Create new function bound to this instance and execute it.
@@ -258,7 +258,7 @@ fiftyoneDegreesManager = function() {
                                 func();
                             }
                             if (sessionStorage) {
-                                sessionStorage.setItem(sessionKey + "_" + name, true)
+                                sessionStorage.setItem(sessionKey + "_property_" + name, true)
                             }
                         }
                     } else {
