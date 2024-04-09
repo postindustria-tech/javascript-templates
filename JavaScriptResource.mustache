@@ -75,12 +75,12 @@ fiftyoneDegreesManager = function() {
         }
     }
 
-    // Get 'cookies' with the '51D_' prefix that have been added to the request
+    // Get stored values with the '51D_' prefix that have been added to the request
     // and return the data as key value pairs. This method is needed to extract
-    // cookie values for inclusion in the GET or POST request for situations
-    // where CORS will prevent cookies being sent to third parties.
+    // stored values for inclusion in the GET or POST request for situations
+    // where CORS will prevent them from being sent to third parties.
     var getFodSavedValues = function(){
-        let fodCookies = {};
+        let fodValues = {};
         {{#_enableCookies}}
         {
             let keyValuePairs = document.cookie.split(/; */);
@@ -89,7 +89,7 @@ fiftyoneDegreesManager = function() {
                 let name = nextPair.substring(0, firstEqualsLocation);
                 if(startsWith(name, "51D_")){
                     let value = nextPair.substring(firstEqualsLocation+1);
-                    fodCookies[name] = value;
+                    fodValues[name] = value;
                 }
             }
         };
@@ -97,44 +97,36 @@ fiftyoneDegreesManager = function() {
         {{^_enableCookies}}
         {
             // Collect values from session storage
-            let sessionCookiePrefix = sessionKey + "_cookie_";
+            let session51DataPrefix = sessionKey + "_data_";
             for(let i = 0, n = window.sessionStorage.length; i < n; ++i) {
                 let nextKey = window.sessionStorage.key(i);
-                if(startsWith(nextKey, sessionCookiePrefix)){
+                if(startsWith(nextKey, session51DataPrefix)){
                     let value = window.sessionStorage[nextKey];
-                    fodCookies[nextKey.substring(sessionCookiePrefix.length)] = value;
+                    fodValues[nextKey.substring(session51DataPrefix.length)] = value;
                 }
             }
         };
         {{/_enableCookies}}
-        return fodCookies;
+        return fodValues;
     };
 
-    // Extract key value pairs from the '51D_' prefixed cookies and concatenates
+    // Extract key value pairs from the '51D_' prefixed values and concatenates
     // them to form a query string for the subsequent json refresh.
     var getParametersFromStorage = function(){
-        var fodCookies = getFodSavedValues();
+        var fodValues = getFodSavedValues();
         var keyValuePairs = [];
-        for (var key in fodCookies) {
-            if (fodCookies.hasOwnProperty(key)) {
-                // Url encode the cookie value.
+        for (var key in fodValues) {
+            if (fodValues.hasOwnProperty(key)) {
+                // Url encode the value.
                 // This is done to ensure that invalid characters (e.g. = chars at the end of 
                 // base 64 encoded strings) reach the server intact.
                 // The server will automatically decode the value before passing it into the 
                 // Pipeline API.
-                keyValuePairs.push(key+"="+encodeURIComponent(fodCookies[key]));
+                keyValuePairs.push(key+"="+encodeURIComponent(fodValues[key]));
             }
         }
         return keyValuePairs;
     };
-
-    /**
-     * Delete a cookie.
-     * @param {string} name Cookie key
-     */
-    function deleteCookie(name) {
-        document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-    }
 
     // Fetch a value safely from the json object. If a key somewhere down the
     // '.' separated hierarchy of keys is not present then 'undefined' is
@@ -199,9 +191,9 @@ fiftyoneDegreesManager = function() {
         if (jsProperties !== undefined && jsProperties.length > 0) {
 
             {{^_enableCookies}}
-            let cookieSetRegex = new RegExp('document\\.cookie\\s*=\\s*(("([A-Za-z0-9_]+)\\s*=\\s*"\\s*\\+\\s*([^\\s};]+))|(`([A-Za-z0-9_]+)\\s*=\\s*\\$\\{([^}]+)\\}`))', 'g');
-            let sessionCookiePrefix = sessionKey + "_cookie_";
-            let sessionSetPatch = 'window.sessionStorage["' + sessionCookiePrefix + '$3$6"]=$4$7';
+            let valueSetPrefix = new RegExp('document\\.cookie\\s*=\\s*(("([A-Za-z0-9_]+)\\s*=\\s*"\\s*\\+\\s*([^\\s};]+))|(`([A-Za-z0-9_]+)\\s*=\\s*\\$\\{([^}]+)\\}`))', 'g');
+            let session51DataPrefix = sessionKey + "_data_";
+            let sessionSetPatch = 'window.sessionStorage["' + session51DataPrefix + '$3$6"]=$4$7';
             {{/_enableCookies}}
                             
             // Execute each of the JavaScript property code snippets using the
@@ -235,7 +227,7 @@ fiftyoneDegreesManager = function() {
                             started++;
 
                             {{^_enableCookies}}
-                            body = body.replaceAll(cookieSetRegex, sessionSetPatch);
+                            body = body.replaceAll(valueSetPrefix, sessionSetPatch);
                             {{/_enableCookies}}
 
                             if (body.indexOf(searchString) !== -1){
@@ -376,7 +368,7 @@ fiftyoneDegreesManager = function() {
     // cached by browsers, the result of the POST request is stored in session
     // storage on a successful response. This can then be checked before making
     // repeat requests to the call-back URL.
-    // Any cookie parameters that have been set by the executed JavaScript
+    // Any saved value parameters that have been set by the executed JavaScript
     // properties are added to the list of parameters, this list is then
     // serialized as Form Data and sent in the POST body to the call-back URL,
     // refreshing the JSON data. The new JSON is then loaded if the request is
@@ -385,11 +377,11 @@ fiftyoneDegreesManager = function() {
     var processRequest = function(resolve, reject){
         loadParameters();
 
-        // Get additional parameters from cookies in case they are not sent
+        // Get additional parameters in case they are not sent
         // by the browser.
-		var cookieParams = getParametersFromStorage();
-        for(var cookie in cookieParams) {
-            var parts = cookieParams[cookie].split('=');
+		var savedValueParams = getParametersFromStorage();
+        for(var savedValueIndex in savedValueParams) {
+            var parts = savedValueParams[savedValueIndex].split('=');
             parameters[parts[0]] = parts[1];
         }
 
