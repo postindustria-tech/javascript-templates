@@ -46,8 +46,12 @@ document.cookie = "  51D_PropertyName  = " + "True"; // Spaces inside the cookie
 document.cookie = `  51D_PropertyName  =${"True"}`; // Spaces inside the template literal are not allowed
 document.cookie = `51D_PropertyName=START${window.middle}END`; // Concatenating strings directly within template literals is not allowed
 ```
-
 ---
+
+## CSP Considerations
+[Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) is an added layer of security to mitigate cross-site and other types of attacks.  CSP limits which 3rd party resources are loaded and what these resources are allowed to do.  51Degrees JavaScript produced from the template is usually such a 3rd party resource when hosted on [51Degrees cloud](https://cloud.51degrees.com/api-docs/index.html).  If CSP header specifies [script-src](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/script-src) it has to list 51Degrees cloud origin as a source and also add 'unsafe-eval' as a source.
+
+`'unsafe-eval'` source is needed because the template loads and executes dynamic javascript code snippets relying on JavaScript Function API which is in the eval() family. The snippets are part of the data file and are frequently updated to support latest changes in the browsers. Snippet execution may cause multiple server calls to load more dynamic code (in theory, in practice it usually comes down to a single server call) - thus this code can not be statically included in the template and has to be loaded dynamically as part of the JSON response of the server. 
 
 ## Shipping / Deployment
 
